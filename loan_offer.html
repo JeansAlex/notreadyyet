@@ -1,0 +1,29 @@
+<!-- loan_offer.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Offer</title>
+</head>
+<body>
+    <h1>Loan Offers</h1>
+    {% if has_offer %}
+        <p>You have a pending loan offer!</p>
+        <p><strong>Loan Amount:</strong> ${{ amount }}</p>
+        <p><strong>Interest Rate:</strong> {{ interest }}%</p>
+
+        <form method="POST" action="/accept_loan">
+            <button type="submit">Accept Loan</button>
+        </form>
+
+        <form method="POST" action="/reject_loan">
+            <button type="submit">Reject Loan</button>
+        </form>
+    {% else %}
+        <p>No active loan offers at this time. If you qualify, you will see an offer here.</p>
+    {% endif %}
+
+    <a href="/loan_history">Go back to Loan History</a>
+</body>
+</html>

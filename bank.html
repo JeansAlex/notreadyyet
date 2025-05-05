@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Dashboard - Bank App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .account-info {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #ecf0f1;
+            border-radius: 8px;
+        }
+
+        .account-info p {
+            font-size: 1.2rem;
+        }
+
+        form {
+            margin-bottom: 30px;
+        }
+
+        form label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        form input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        form button {
+            width: 100%;
+            padding: 10px;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+        }
+
+        form button:hover {
+            background-color: #2ecc71;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        ul li {
+            background-color: #ecf0f1;
+            margin: 8px 0;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 1.1rem;
+        }
+
+        a {
+            color: #2980b9;
+            text-decoration: none;
+            font-size: 1rem;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .loan-section a.loan-button {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+
+        .loan-section a.loan-button:hover {
+            background-color: #2980b9;
+        }
+
+        .logout {
+            display: inline-block;
+            margin-top: 20px;
+            background-color: #e74c3c;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .logout:hover {
+            background-color: #c0392b;
+        }
+
+        .view-loan-history {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #f39c12;
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+
+        .view-loan-history:hover {
+            background-color: #e67e22;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Welcome, {{ user_db.name }}!</h1>
+    </header>
+
+    <div class="container">
+        <div class="account-info">
+            <p><strong>Account Number:</strong> {{ user_db.account_number }}</p>
+            <p><strong>Balance:</strong> ${{ balance }}</p>
+        </div>
+
+        <section>
+            <h3>Transaction History:</h3>
+            <ul>
+                {% for transaction in transactions %}
+                    <li>{{ transaction }}</li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        <section>
+            <h3>Deposit Funds</h3>
+            <form action="/deposit" method="post">
+                <label for="amount">Amount to deposit:</label>
+                <input type="number" name="amount" step="0.01" required>
+                <button type="submit">Deposit</button>
+            </form>
+        </section>
+
+        <section>
+            <h3>Transfer Funds</h3>
+            <form action="/transfer" method="post">
+                <label for="recipient_account">Recipient Account Number:</label>
+                <input type="text" name="recipient_account" required>
+                <label for="amount">Amount to transfer:</label>
+                <input type="number" name="amount" step="0.01" required>
+                <button type="submit">Transfer</button>
+            </form>
+        </section>
+
+        <section class="loan-section">
+            <h3>Loan Options</h3>
+            <a href="/loan_offer">Check for loan offers</a><br><br>
+            <a href="/loan_apply" class="loan-button" target="_blank">Apply for a Loan</a>
+        </section>
+
+        <!-- New section for Loan History -->
+        <section>
+            <a href="/loan_history" class="view-loan-history">View Loan History</a>
+        </section>
+
+        <a href="/logout" class="logout">Logout</a>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan History</title>
+</head>
+<body>
+    <h1>Loan History</h1>
+
+    {% if current_user.loan_interest_rate is none %}
+        <p>You do not have an active loan.</p>
+    {% else %}
+        <h3>Active Loan</h3>
+        <p>Loan Amount: ${{ current_user.pending_loan_amount }}</p>
+        <p>Interest Rate: {{ current_user.loan_interest_rate }}%</p>
+        <form method="POST" action="/pay_loan">
+            <label for="payment_amount">Payment Amount:</label>
+            <input type="number" id="payment_amount" name="payment_amount" step="0.01" min="0" value="0">
+            <button type="submit">Pay Loan</button>
+        </form>
+    {% endif %}
+
+    <h2>Previous Loans</h2>
+    <ul>
+        {% for loan in loans %}
+            <li>
+                Loan Amount: ${{ loan.loan_amount }} | 
+                Interest Rate: {{ loan.interest_rate }}% | 
+                Date Accepted: {{ loan.date_accepted }}
+            </li>
+        {% endfor %}
+    </ul>
+
+    <form method="POST" action="/pay_loan">
+        <button type="submit">Repay Loan</button>
+    </form>
+</body>
+</html>

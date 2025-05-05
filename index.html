@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .cta {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .cta a {
+            color: #27ae60;
+            text-decoration: none;
+            font-size: 1.2rem;
+            margin: 10px 0;
+            display: inline-block;
+        }
+
+        .cta a:hover {
+            text-decoration: underline;
+        }
+
+        form {
+            margin-top: 20px;
+        }
+
+        form label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        form input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        form button {
+            width: 100%;
+            padding: 10px;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+        }
+
+        form button:hover {
+            background-color: #2ecc71;
+        }
+
+        .view-loans-button {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .view-loans-button a {
+            color: #fff;
+            background-color: #3498db;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+
+        .view-loans-button a:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Welcome to Cyber360</h1>
+    </header>
+
+    <div class="container">
+        {% if current_user.is_authenticated %}
+        <div class="cta">
+            <a href="{{ url_for('google_login') }}">Sign in with Google</a><br>
+            <a href="{{ url_for('register') }}">Create an Account</a><br>
+        </div>
+
+        <h3>Welcome back, {{ current_user.name }}!</h3>
+        
+        <!-- View Loan History Button -->
+        <div class="view-loans-button">
+            <a href="{{ url_for('loan_history') }}">View Loan History</a>
+        </div>
+
+        {% else %}
+        <div class="cta">
+            <a href="{{ url_for('google_login') }}">Sign in with Google</a><br>
+            <a href="{{ url_for('register') }}">Create an Account</a><br>
+        </div>
+
+        <h3>Or log in with your email:</h3>
+        <form method="POST" action="{{ url_for('login') }}">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required><br><br>
+
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required><br><br>
+
+            <button type="submit">Login</button>
+        </form>
+        {% endif %}
+    </div>
+
+    <span id="PING_IFRAME_FORM_DETECTION" style="display: none;"></span>
+</body>
+
+</html>

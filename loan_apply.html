@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head><title>Loan Application</title></head>
+<body>
+  <h2>Loan Application</h2>
+  <p>Welcome, {{ user.name }}!</p>
+
+  {% if user.pending_loan_amount %}
+    <p>You have a loan offer:</p>
+    <p>Amount: ${{ user.pending_loan_amount }}</p>
+    <p>Interest Rate: {{ user.loan_interest_rate }}%</p>
+
+    <form action="/accept_loan" method="POST">
+      <button type="submit">Accept Loan</button>
+    </form>
+    <form action="/reject_loan" method="POST">
+      <button type="submit">Reject Loan</button>
+    </form>
+
+    <h3>Pay Down Loan</h3>
+    <form action="/pay_loan" method="POST">
+      <label for="payment_amount">Payment Amount:</label>
+      <input type="number" name="payment_amount" step="0.01" min="0" max="{{ user.balance }}" placeholder="Enter amount to pay" required><br>
+      <button type="submit">Pay Loan</button>
+    </form>
+  {% else %}
+    <p>No current loan offer available.</p>
+    <form action="/loan_offer" method="POST">
+      <label>Annual Income:</label>
+      <input type="number" name="income" required><br>
+      <label>Credit Score:</label>
+      <input type="number" name="credit_score" required><br>
+      <button type="submit">Apply for Loan</button>
+    </form>
+  {% endif %}
+</body>
+</html>
