@@ -86,7 +86,7 @@ def load_user(user_id):
     return db.session.get(User, int(user_id))
 
 # Load OAuth credentials
-with open(r'C:\Users\mitchellalexand\Desktop\Secret\client_secret_989028034934-k8sclvu73i82uv49mgni1spg1sukmbf7.apps.googleusercontent.com.json') as f:
+with open(r'C:\Users\mitchellalexand\OneDrive - Eastern Connecticut State University\All Git\notreadyyet-main\client_secret_989028034934-k8sclvu73i82uv49mgni1spg1sukmbf7.apps.googleusercontent.com.json') as f:
     creds = json.load(f)['web']
 
 oauth = OAuth(app)
@@ -103,13 +103,7 @@ google = oauth.register(
 @app.route('/accept_loan', methods=['POST'])
 @login_required
 def accept_loan():
-    if current_user.loan_interest_rate is not None:
-        # User already has an active loan
-        flash("You already have an active loan. Repay it before accepting a new one.")
-        return redirect('/loan_history')  # Redirect to loan history
-
     if current_user.pending_loan_amount:
-        # Add the loan history entry
         loan_history = LoanHistory(
             loan_amount=current_user.pending_loan_amount,
             interest_rate=current_user.loan_interest_rate,
@@ -117,19 +111,22 @@ def accept_loan():
         )
         db.session.add(loan_history)
 
-        # Update user balance and clear the pending loan
         current_user.balance += current_user.pending_loan_amount
         db.session.add(Transaction(
             action=f"Accepted loan of ${current_user.pending_loan_amount:.2f} at {current_user.loan_interest_rate:.2f}%",
             user_id=current_user.id
         ))
+
+        # Clear the offer (not the active loan status)
         current_user.pending_loan_amount = None
         current_user.loan_interest_rate = None
         db.session.commit()
 
-        return redirect('/')
-
-    return "No loan to accept."
+        flash("Loan accepted successfully!")
+        return redirect('/loan_history')
+    else:
+        flash("No loan offer to accept.")
+        return redirect('/loan_offer')
 
 
 @app.route('/loan_history', methods=['GET', 'POST'])
@@ -162,38 +159,39 @@ def loan_history():
     loans = LoanHistory.query.filter_by(user_id=current_user.id).all()
     return render_template('loan_history.html', loans=loans, user=current_user)
 
-
 @app.route('/pay_loan', methods=['POST'])
 @login_required
 def pay_loan():
-    if current_user.loan_interest_rate is None:
+    # Fetch the latest active loan from the LoanHistory table
+    active_loan = LoanHistory.query.filter_by(user_id=current_user.id).order_by(LoanHistory.date_accepted.desc()).first()
+
+    if not active_loan or active_loan.loan_amount <= 0:
         return "No active loan to pay."
 
+    # Check if the user is trying to make a payment that is more than their balance
     payment = float(request.form['payment_amount'])
     if payment <= 0 or payment > current_user.balance:
         return "Invalid payment amount."
 
     # Reduce the loan amount in LoanHistory instead of adjusting interest
-    active_loan = LoanHistory.query.filter_by(user_id=current_user.id).order_by(LoanHistory.date_accepted.desc()).first()
-    if active_loan:
-        current_user.balance -= payment
+    current_user.balance -= payment
 
-        if payment >= active_loan.loan_amount:
-            active_loan.loan_amount = 0
-            flash("Loan fully repaid.")
-            db.session.delete(active_loan)  # Delete the loan from history if paid off
-        else:
-            active_loan.loan_amount -= payment  # Deduct payment from the loan amount
-            flash(f"Paid ${payment:.2f} toward your loan. Remaining loan: ${active_loan.loan_amount:.2f}")
+    if payment >= active_loan.loan_amount:
+        active_loan.loan_amount = 0
+        flash("Loan fully repaid.")
+        db.session.delete(active_loan)  # Delete the loan from history if paid off
+    else:
+        active_loan.loan_amount -= payment  # Deduct payment from the loan amount
+        flash(f"Paid ${payment:.2f} toward your loan. Remaining loan: ${active_loan.loan_amount:.2f}")
 
-        db.session.add(Transaction(
-            action=f"Paid ${payment:.2f} toward loan",
-            user_id=current_user.id
-        ))
+    # Record the payment in the Transaction table
+    db.session.add(Transaction(
+        action=f"Paid ${payment:.2f} toward loan",
+        user_id=current_user.id
+    ))
 
-        db.session.commit()
-    return redirect('/')
-
+    db.session.commit()
+    return redirect('/loan_history')
 @app.route('/')
 def index():
     if current_user.is_authenticated:
@@ -365,8 +363,8 @@ if __name__ == '__main__':
 
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     context.load_cert_chain(
-        certfile=r'C:\Users\mitchellalexand\Desktop\OpenSSL\cert.pem',
-        keyfile=r'C:\Users\mitchellalexand\Desktop\OpenSSL\key.pem'
+        certfile=r'C:\Users\mitchellalexand\OneDrive - Eastern Connecticut State University\All Git\notreadyyet-main\cert.pem',
+        keyfile=r'C:\Users\mitchellalexand\OneDrive - Eastern Connecticut State University\All Git\notreadyyet-main\key.pem'
     )
 
     # Start the Flask app in a background thread

@@ -154,16 +154,19 @@
     <div class="container">
         <div class="account-info">
             <p><strong>Account Number:</strong> {{ user_db.account_number }}</p>
-            <p><strong>Balance:</strong> ${{ balance }}</p>
+            <p><strong>Balance:</strong> ${{ user_db.balance }}</p>
         </div>
 
         <section>
             <h3>Transaction History:</h3>
             <ul>
                 {% for transaction in transactions %}
-                    <li>{{ transaction }}</li>
+                    <li>{{ transaction.timestamp.strftime('%Y-%m-%d %H:%M:%S') }} — {{ transaction.action }}</li>
+                {% else %}
+                    <li>No transactions found.</li>
                 {% endfor %}
             </ul>
+            
         </section>
 
         <section>

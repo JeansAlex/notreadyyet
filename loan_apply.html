@@ -1,15 +1,30 @@
 <!DOCTYPE html>
 <html>
-<head><title>Loan Application</title></head>
+<head>
+  <title>Loan Application</title>
+</head>
 <body>
   <h2>Loan Application</h2>
   <p>Welcome, {{ user.name }}!</p>
 
+  <!-- Flash messages -->
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
   {% if user.pending_loan_amount %}
+    <!-- User has a pending loan offer -->
     <p>You have a loan offer:</p>
     <p>Amount: ${{ user.pending_loan_amount }}</p>
     <p>Interest Rate: {{ user.loan_interest_rate }}%</p>
 
+    <!-- Accept or Reject Loan Offer -->
     <form action="/accept_loan" method="POST">
       <button type="submit">Accept Loan</button>
     </form>
@@ -17,13 +32,26 @@
       <button type="submit">Reject Loan</button>
     </form>
 
-    <h3>Pay Down Loan</h3>
-    <form action="/pay_loan" method="POST">
-      <label for="payment_amount">Payment Amount:</label>
-      <input type="number" name="payment_amount" step="0.01" min="0" max="{{ user.balance }}" placeholder="Enter amount to pay" required><br>
-      <button type="submit">Pay Loan</button>
-    </form>
+  {% elif user.loan_histories|length > 0 %}
+    {% set active_loan = user.loan_histories[-1] %}
+    {% if active_loan.loan_amount > 0 %}
+      <!-- Active loan exists -->
+      <h3>Your Active Loan</h3>
+      <p>Loan Amount: ${{ active_loan.loan_amount }}</p>
+      <p>Interest Rate: {{ active_loan.interest_rate }}%</p>
+
+      <h3>Pay Down Active Loan</h3>
+      <form action="/pay_loan" method="POST">
+        <label for="payment_amount">Payment Amount:</label>
+        <input type="number" name="payment_amount" step="0.01" min="0" max="{{ user.balance }}" placeholder="Enter amount to pay" required><br>
+        <button type="submit">Pay Loan</button>
+      </form>
+    {% else %}
+      <p>You have no active loan at this time.</p>
+    {% endif %}
+
   {% else %}
+    <!-- No pending loan and no active loan -->
     <p>No current loan offer available.</p>
     <form action="/loan_offer" method="POST">
       <label>Annual Income:</label>

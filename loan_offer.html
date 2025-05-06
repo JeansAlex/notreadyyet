@@ -1,29 +1,71 @@
-<!-- loan_offer.html -->
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loan Offer</title>
+  <title>Loan Offer</title>
 </head>
 <body>
-    <h1>Loan Offers</h1>
-    {% if has_offer %}
-        <p>You have a pending loan offer!</p>
-        <p><strong>Loan Amount:</strong> ${{ amount }}</p>
-        <p><strong>Interest Rate:</strong> {{ interest }}%</p>
+  <h2>Loan Application</h2>
+  <p>Welcome, {{ user.name }}!</p>
+  <p>Current Balance: ${{ "%.2f"|format(user.balance) }}</p>
 
-        <form method="POST" action="/accept_loan">
-            <button type="submit">Accept Loan</button>
-        </form>
-
-        <form method="POST" action="/reject_loan">
-            <button type="submit">Reject Loan</button>
-        </form>
-    {% else %}
-        <p>No active loan offers at this time. If you qualify, you will see an offer here.</p>
+  <!-- Flash messages -->
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
     {% endif %}
+  {% endwith %}
 
-    <a href="/loan_history">Go back to Loan History</a>
+  {% if has_offer %}
+    <!-- Display pending loan offer -->
+    <h3>Your Loan Offer</h3>
+    <p>Amount: ${{ "%.2f"|format(amount) }}</p>
+    <p>Interest Rate: {{ "%.2f"|format(interest) }}%</p>
+
+    <form action="/accept_loan" method="POST" style="display:inline-block;">
+      <button type="submit">Accept Loan</button>
+    </form>
+
+    <form action="/reject_loan" method="POST" style="display:inline-block;">
+      <button type="submit">Reject Loan</button>
+    </form>
+
+  {% elif user.loan_histories|length > 0 %}
+    <!-- Display current active loan if no pending offer -->
+    {% set active_loan = user.loan_histories[0] %}
+    {% if active_loan.loan_amount > 0 %}
+      <h3>Active Loan</h3>
+      <p>Loan Amount: ${{ "%.2f"|format(active_loan.loan_amount) }}</p>
+      <p>Interest Rate: {{ "%.2f"|format(active_loan.interest_rate) }}%</p>
+
+      <h3>Make a Payment</h3>
+      <form action="/pay_loan" method="POST">
+        <label for="payment_amount">Payment Amount:</label>
+        <input type="number" name="payment_amount" step="0.01" min="0" max="{{ user.balance }}" required>
+        <button type="submit">Pay Loan</button>
+      </form>
+
+    {% else %}
+      <p>Your active loan is fully repaid!</p>
+    {% endif %}
+  
+  {% else %}
+    <!-- Display loan application form -->
+    <p>No current loan offer. Apply below:</p>
+    <form action="/loan_offer" method="POST">
+      <label for="income">Annual Income:</label>
+      <input type="number" name="income" required><br>
+
+      <label for="credit_score">Credit Score:</label>
+      <input type="number" name="credit_score" min="300" max="850" required><br>
+
+      <button type="submit">Apply for Loan</button>
+    </form>
+  {% endif %}
+
+  <p><a href="/">Back to Dashboard</a></p>
 </body>
 </html>

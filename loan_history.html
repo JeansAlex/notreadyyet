@@ -1,39 +1,68 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loan History</title>
+  <title>Loan History</title>
 </head>
 <body>
-    <h1>Loan History</h1>
+  <h2>Loan History</h2>
+  <p>Welcome, {{ user.name }}!</p>
+  <p>Current Balance: ${{ "%.2f"|format(user.balance) }}</p>
 
-    {% if current_user.loan_interest_rate is none %}
-        <p>You do not have an active loan.</p>
-    {% else %}
-        <h3>Active Loan</h3>
-        <p>Loan Amount: ${{ current_user.pending_loan_amount }}</p>
-        <p>Interest Rate: {{ current_user.loan_interest_rate }}%</p>
-        <form method="POST" action="/pay_loan">
-            <label for="payment_amount">Payment Amount:</label>
-            <input type="number" id="payment_amount" name="payment_amount" step="0.01" min="0" value="0">
-            <button type="submit">Pay Loan</button>
-        </form>
-    {% endif %}
-
-    <h2>Previous Loans</h2>
-    <ul>
-        {% for loan in loans %}
-            <li>
-                Loan Amount: ${{ loan.loan_amount }} | 
-                Interest Rate: {{ loan.interest_rate }}% | 
-                Date Accepted: {{ loan.date_accepted }}
-            </li>
+  <!-- Flash messages -->
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
         {% endfor %}
-    </ul>
+      </ul>
+    {% endif %}
+  {% endwith %}
 
-    <form method="POST" action="/pay_loan">
-        <button type="submit">Repay Loan</button>
-    </form>
+  {% if loans %}
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Date Accepted</th>
+          <th>Original Amount</th>
+          <th>Interest Rate</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for loan in loans %}
+          <tr>
+            <td>{{ loan.date_accepted.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td>${{ "%.2f"|format(loan.loan_amount) }}</td>
+            <td>{{ "%.2f"|format(loan.interest_rate) }}%</td>
+            <td>
+              {% if loop.index0 == 0 %}
+                Active
+              {% else %}
+                Repaid
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <!-- Payment form for active loan -->
+    {% set active_loan = loans[0] %}
+    {% if active_loan.loan_amount > 0 %}
+      <h3>Make a Payment Toward Your Active Loan</h3>
+      <form action="/pay_loan" method="POST">
+        <label for="payment_amount">Payment Amount:</label>
+        <input type="number" name="payment_amount" step="0.01" min="0" max="{{ user.balance }}" required>
+        <button type="submit">Pay Loan</button>
+      </form>
+    {% else %}
+      <p>You have fully repaid your latest loan.</p>
+    {% endif %}
+  {% else %}
+    <p>You have no loan history.</p>
+  {% endif %}
+
+  <p><a href="/">Back to Dashboard</a></p>
 </body>
 </html>
